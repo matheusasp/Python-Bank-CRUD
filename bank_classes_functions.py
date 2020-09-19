@@ -45,7 +45,7 @@ def criar_conta():
     saldo = 0
     s1 = random.randint(0,99)
     s2 = random.randint(100,300)
-    senha = s1+s2
+    senha = input("Digite uma senha a sua escolha:\n")
     #lista_cc = []
     #lista_p = []
     tipos_conta = {
@@ -116,60 +116,123 @@ def transferir(conta):
         print("Erro na transferência! Saldo insuficiente.")
 
 
+def atualizarDados(cpf):
 
+    att = int(input("O que deseja atualizar?\n1 - CPF\n2 - Data de Nascimento\n3 - Senha\n"))
+
+    operacoes = {
+                1: "CPF",
+                2: "Data",
+                3: "Senha"
+                
+        }
+    tipo_op = operacoes.get(att, "Inválido")
+
+    print(tipo_op)
+    if(tipo_op == "CPF"):
+        novo_cpf = int(input("Digite seu novo CPF:\n"))
+        
+
+        cursor.execute("UPDATE CONTA_CORRENTE SET CPF = " + str(novo_cpf) + "WHERE CPF = " + str(cpf)  )
+        
+        conn.commit()
+        print("CPF ATUALIZADO!")
+
+    if(tipo_op == "Data"):
+        novo_data = int(input("Digite sua nova data de nascimento:\n"))
+        
+
+        cursor.execute("UPDATE CONTA_CORRENTE SET DATA_NASCIMENTO = " + str(novo_data) + "WHERE CPF = " + str(cpf)  )
+        
+        conn.commit()
+        print("DATA DE NASCIMENTO ATUALIZADA!")
+    
+    if(tipo_op == "Senha"):
+        novo_senha = int(input("Digite sua nova senha:\n"))
+        
+
+        cursor.execute("UPDATE CONTA_CORRENTE SET SENHA = " + str(novo_senha) + "WHERE CPF = " + str(cpf)  )
+        
+        conn.commit()
+        print("SENHA ATUALIZADA!")
+#flag_login = False
 def login():
     try:
         login = int(input("Insira seu cpf cadastrado: \n"))
         senha = input("Insira sua senha: \n")
         flag_login = False
-    
-        cursor.execute("SELECT * FROM CONTA_CORRENTE WHERE CPF = " + str(login) + " AND SENHA = " + senha)
         
-        conn.commit()
-        print("Login bem sucedido")
-        flag_login = True
-        return login
+        #cursor.execute("SELECT * FROM CONTA_CORRENTE WHERE CPF = " + str(login) + " AND SENHA = " + senha)
+        
+        cursor.execute("SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END AS 'CPF' FROM CONTA_CORRENTE WHERE CPF = " + str(login) + "AND SENHA = " + senha)
+        
+        for row in cursor.fetchall():
+            a = row
+            if 1 in a:
+                a = 1
+                conn.commit()
+                print("Login bem sucedido")
+                flag_login = True
+                return login
+            else:
+                b = 1
+                print("Login falhou")
+                login = False
+                return login    
+            return a
+       
+        
+        
+       
     except:
         print("login falhou")
 
 
+sair = 0
+
+while (sair != 3):
+    inicio = input("Bem vindo ao banco do Teths!\nPressione 1 para logar\nPressione 2 para criar conta\nPressione 3 para encerrar a aplicação\n")
 
 
-input("Bem vindo ao banco do Teths!\nPressione Enter para continuar a tela de Login!")
+    if(inicio == "1"):
+        login = login()
+
+        #print(login)
 
 
+        operacoes = {
+                1: "Depositar",
+                2: "Transferir",
+                3: "Atualizar Dados",
+                4: "Sair"
+        }
+        op = 0
 
-login = login()
+        if (login != False):
+            while (op != 4):
+                op = int(input("1 - Depositar\n2 - Transferir\n3 - Atualizar Dados\n4 - Sair")) 
+            
 
-print(login)
+                tipo_op = operacoes.get(op, "Inválido")
 
+                dep = 0
+                tra = 0
 
-operacoes = {
-        1: "Depositar",
-        2: "Transferir",
-        3: "Sair"
-    }
-op = 0
-
-if (login != None):
-    while (op != 3):
-        op = int(input("1 - Depositar\n2 - Transferir\n3 - Sair\n")) 
-    
-
-        tipo_op = operacoes.get(op, "Inválido")
-
-        dep = 0
-        tra = 0
-
-        if(tipo_op == 'Depositar'):
-            while (dep == 0):
-                depositar(login)
-                dep = 1
-        if(tipo_op == 'Transferir'):
-            while (tra == 0):
-                transferir(login)
-                tra = 1
-        if(tipo_op == 'Sair'):
-            input('Saindo')
-            op = 3
-        
+                if(tipo_op == 'Depositar'):
+                    while (dep == 0):
+                        depositar(login)
+                        dep = 1
+                if(tipo_op == 'Transferir'):
+                    while (tra == 0):
+                        transferir(login)
+                        tra = 1
+                if(tipo_op == "Atualizar Dados"):
+                    atualizarDados(login)        
+                if(tipo_op == 'Sair'):
+                    input('Saindo')
+                    op = 4
+                
+    if(inicio == "2"):
+        criar_conta()
+    if(inicio == "3"):
+        sair = 3    
